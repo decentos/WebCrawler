@@ -22,9 +22,10 @@ public class CrawlerController {
 
     @GetMapping("/crawl")
     public ResponseEntity<Set<String>> crawl(
-            @ApiParam(name = "domain", value = "Absolute URL", required = true) @RequestParam String domain
+            @ApiParam(name = "domain", value = "Absolute URL", required = true, example = "https://monzo.com/") @RequestParam String domain,
+            @ApiParam(name = "isRoot", value = "Domain or subdomain", required = true, allowableValues = "true, false", defaultValue = "true") @RequestParam boolean isRoot
     ) {
-        Set<String> links = crawlerService.crawl(domain);
+        Set<String> links = crawlerService.crawl(domain, isRoot);
         return ResponseEntity.ok(links);
     }
 }

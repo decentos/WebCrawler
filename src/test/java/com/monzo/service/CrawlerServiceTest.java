@@ -9,8 +9,11 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static util.TestUtil.stubURIWithFilename;
 
 public class CrawlerServiceTest {
@@ -28,9 +31,30 @@ public class CrawlerServiceTest {
     }
 
     @Test
-    public void testCrawler() {
+    public void testDomainCrawler() {
         Set<String> expectedResult = new HashSet<>(List.of("http://127.0.0.1:8081/", "http://127.0.0.1:8081/page2", "http://127.0.0.1:8081/page3", "http://127.0.0.1:8081/page4"));
-        Set<String> actualResult = crawlerService.crawl("http://127.0.0.1:8081/");
+        Set<String> actualResult = crawlerService.crawl("http://127.0.0.1:8081/", true);
         assertIterableEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void testSubDomainCrawler() {
+        Set<String> expectedResult = new HashSet<>(List.of("http://127.0.0.1:8081/", "http://127.0.0.1:8081/page2", "http://127.0.0.1:8081/page3", "http://127.0.0.1:8081/page4"));
+        Set<String> actualResult = crawlerService.crawl("http://127.0.0.1:8081/page2", false);
+        assertIterableEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void testSubDomainLikeRootCrawler() {
+        Set<String> expectedResult = Set.of("http://127.0.0.1:8081/page2");
+        Set<String> actualResult = crawlerService.crawl("http://127.0.0.1:8081/page2", true);
+        assertIterableEquals(expectedResult, actualResult);
+    }
+
+    @Test
+    public void testNotAbsolutUrl() {
+        Throwable exception = assertThrows(CompletionException.class, () -> crawlerService.crawl("127.0.0.1:8081", true));
+        assertEquals("The supplied URL, '127.0.0.1:8081', is malformed. Make sure it is an absolute URL, and starts with 'http://' or 'https://'. See https://jsoup.org/cookbook/extracting-data/working-with-urls",
+                exception.getCause().getMessage());
     }
 }
