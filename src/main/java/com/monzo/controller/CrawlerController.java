@@ -22,7 +22,7 @@ public class CrawlerController {
 
     @GetMapping("/crawl")
     public ResponseEntity<List<String>> crawl(
-            @ApiParam(name = "domain", value = "Domain URL", required = true) @RequestParam String domain
+            @ApiParam(name = "domain", value = "Absolute URL", required = true) @RequestParam String domain
     ) {
         List<String> links = crawlerService.crawl(domain);
         return ResponseEntity.ok(links);

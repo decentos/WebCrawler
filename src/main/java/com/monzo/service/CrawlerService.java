@@ -5,10 +5,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
@@ -19,6 +21,7 @@ public class CrawlerService {
 
     public List<String> crawl(String domain) {
         Queue<String> heap = new ConcurrentLinkedQueue<>();
+        Queue<CompletableFuture<Void>> threads = new ConcurrentLinkedQueue<>();
         Set<String> visited = ConcurrentHashMap.newKeySet();
         List<String> links = new ArrayList<>();
 
@@ -26,7 +29,8 @@ public class CrawlerService {
         while (!heap.isEmpty()) {
             String link = heap.poll();
             links.add(link);
-            parsePage(domain, link, visited, heap);
+            threads.offer(CompletableFuture.runAsync(() -> parsePage(domain, link, visited, heap)));
+            while (heap.isEmpty() && !threads.isEmpty()) threads.poll().join();
         }
         log.info("Successfully crawled %s and retrieved %d links.".formatted(domain, links.size()));
         return links;
@@ -40,7 +44,7 @@ public class CrawlerService {
             Document doc = Jsoup.connect(link).get();
             Elements elements = doc.select("a[href^=" + domain + "]");
             elements.forEach(element -> heap.offer(element.attr("abs:href")));
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.info(e.getMessage());
         }
     }
