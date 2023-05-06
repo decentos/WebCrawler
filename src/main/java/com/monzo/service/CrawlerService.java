@@ -3,6 +3,7 @@ package com.monzo.service;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
 public class CrawlerService {
     private static final Logger log = Logger.getLogger(CrawlerService.class.getName());
 
+    @Cacheable("pages")
     public Set<String> crawl(String domain) {
         Queue<String> heap = new ConcurrentLinkedQueue<>();
         Queue<CompletableFuture<Void>> threads = new ConcurrentLinkedQueue<>();
