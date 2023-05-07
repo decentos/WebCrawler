@@ -25,7 +25,7 @@ things like HTML parsing.
 - A queue is maintained for the crawlers to visit
 - Convert the passed URL to a domain, if required
 - Adding to the queue for parsing
-- DFS approach - all URLs are added to the resulting set, and sub-URLs are added to the queue for parsing
+- BFS approach - all URLs are added to the resulting set, and sub-URLs are added to the queue for parsing
 - Processing is asynchronous in a separate thread
 - If the queue is empty, we wait for one of the threads to execute until new values are added to the queue
 - Crawling ends if the queue is empty and all threads have completed
